@@ -2,9 +2,9 @@ import * as https from 'https'
 import fetch from 'node-fetch'
 
 class ElasticsearchBulkIndexer {
-  constructor() {
+  constructor(chunkSize = 5000) {
     this.buffer = []
-    this.chunkSize = 5000
+    this.chunkSize = chunkSize
   }
 
   async flush() {
