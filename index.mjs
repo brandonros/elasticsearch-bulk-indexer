@@ -1,4 +1,5 @@
 import * as https from 'https'
+import * as http from 'http'
 import fetch from 'node-fetch'
 
 class ElasticsearchBulkIndexer {
@@ -6,6 +7,8 @@ class ElasticsearchBulkIndexer {
     this.username = username
     this.password = password
     this.url = url
+    this.agent = this.url.startsWith('https://') ? new https.Agent({ rejectUnauthorized: false }) : new http.Agent()
+    this.basicAuthorization = Buffer.from(`${this.username}:${this.password}`).toString('base64')
     this.buffer = []
     this.chunkSize = chunkSize
   }
@@ -15,16 +18,12 @@ class ElasticsearchBulkIndexer {
       return
     }
     const requestBody = `${this.buffer.join('\n')}\n`
-    const basicAuthorization = Buffer.from(`${this.username}:${this.password}`).toString('base64')
-    const httpsAgent = new https.Agent({
-      rejectUnauthorized: false
-    })
     const response = await fetch(`${this.url}/_bulk`, {
       method: 'POST',
-      agent: httpsAgent,
+      agent: this.agent,
       headers: {
         'Content-Type': 'application/x-ndjson',
-        Authorization: `Basic ${basicAuthorization}`
+        Authorization: `Basic ${this.basicAuthorization}`
       },
       body: requestBody
     })
