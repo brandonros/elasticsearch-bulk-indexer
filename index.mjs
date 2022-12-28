@@ -2,7 +2,10 @@ import * as https from 'https'
 import fetch from 'node-fetch'
 
 class ElasticsearchBulkIndexer {
-  constructor(chunkSize = 5000) {
+  constructor(username, password, url, chunkSize = 5000) {
+    this.username = username
+    this.password = password
+    this.url = url
     this.buffer = []
     this.chunkSize = chunkSize
   }
@@ -12,11 +15,11 @@ class ElasticsearchBulkIndexer {
       return
     }
     const requestBody = `${this.buffer.join('\n')}\n`
-    const basicAuthorization = Buffer.from(`${process.env.ELASTICSEARCH_USERNAME}:${process.env.ELASTICSEARCH_PASSWORD}`).toString('base64')
+    const basicAuthorization = Buffer.from(`${this.username}:${this.password}`).toString('base64')
     const httpsAgent = new https.Agent({
       rejectUnauthorized: false
     })
-    const response = await fetch(`${process.env.ELASTICSEARCH_URL}/_bulk`, {
+    const response = await fetch(`${this.url}/_bulk`, {
       method: 'POST',
       agent: httpsAgent,
       headers: {
