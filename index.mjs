@@ -12,6 +12,23 @@ class ElasticsearchBulkIndexer {
     this.buffer = []
     this.chunkSize = chunkSize
   }
+  
+  async query(sql) {
+    const response = await fetch(`${this.url}/_sql`, {
+      method: 'POST',
+      agent: this.agent,
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Basic ${this.basicAuthorization}`
+      },
+      body: JSON.stringify({ query: sql })
+    })
+    if (response.status !== 200) {
+      throw new Error(`Invalid response status: ${response.status}`)
+    }
+    const responseBody = await response.json()
+    return responseBody
+  }
 
   async flush() {
     if (this.buffer.length === 0) {
