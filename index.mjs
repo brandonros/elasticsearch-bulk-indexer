@@ -17,7 +17,7 @@ class ElasticsearchBulkIndexer {
     if (this.buffer.length === 0) {
       return
     }
-    const requestBody = `${this.buffer.join('\n')}\n`
+    console.log(`${new Date().toISOString()}: flushing`)
     const response = await fetch(`${this.url}/_bulk`, {
       method: 'POST',
       agent: this.agent,
@@ -25,11 +25,12 @@ class ElasticsearchBulkIndexer {
         'Content-Type': 'application/x-ndjson',
         Authorization: `Basic ${this.basicAuthorization}`
       },
-      body: requestBody
+      body: `${this.buffer.join('\n')}\n`
     })
     if (response.status !== 200) {
       throw new Error(`Invalid response status: ${response.status}`)
     }
+    console.log(`${new Date().toISOString()}: flushed`)
   }
 
   async index(indexName, messageId, message) {
